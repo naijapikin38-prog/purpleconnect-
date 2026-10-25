@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#130d1c">
+  <title>PurpleConnect | Connect Your World</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #100d14;
+      color: #f5f0fa;
+    }
+
+    header {
+      background: #1c1427;
+      padding: 18px;
+      text-align: center;
+      border-bottom: 1px solid #39264d;
+    }
+
+    header h1 {
+      color: #c084fc;
+      margin: 0;
+      font-size: 28px;
+    }
+
+    header p {
+      color: #c9bdd6;
+      margin-bottom: 0;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 22px;
+      padding: 14px;
+      background: #17111f;
+      flex-wrap: wrap;
+    }
+
+    nav a {
+      color: #e9d5ff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    nav a:hover { color: #c084fc; }
+
+    main {
+      width: min(720px, 92%);
+      margin: 28px auto;
+    }
+
+    .welcome, .card {
+      background: #1c1723;
+      border: 1px solid #382746;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .welcome {
+      background: linear-gradient(135deg, #38204f, #1c1723);
+    }
+
+    h2 { margin-top: 0; }
+
+    .muted { color: #b8aabe; line-height: 1.6; }
+
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      resize: vertical;
+      background: #110d17;
+      color: white;
+      border: 1px solid #51405f;
+      border-radius: 10px;
+      padding: 12px;
+      font: inherit;
+    }
+
+    button {
+      background: #9333ea;
+      color: white;
+      border: 0;
+      border-radius: 9px;
+      padding: 11px 17px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+
+    button:hover { background: #7e22ce; }
+
+    .post {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      line-height: 1.6;
+    }
+
+    .post-meta {
+      color: #c084fc;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    footer {
+      text-align: center;
+      color: #a99ab6;
+      padding: 25px 15px;
+    }
+
+    .notice {
+      font-size: 13px;
+      color: #c9bdd6;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>💜 PurpleConnect</h1>
+    <p>Connect your world. Share your story.</p>
+  </header>
+
+  <nav>
+    <a href="#home">Home</a>
+    <a href="#create">Create Post</a>
+    <a href="#feed">Community</a>
+  </nav>
+
+  <main id="home">
+    <section class="welcome">
+      <h2>Welcome to PurpleConnect!</h2>
+      <p class="muted">
+        A place to share ideas, express yourself, and discover a community.
+        Your next connection starts here.
+      </p>
+      <a href="#create" style="color:#e9d5ff;">Share your first post ↓</a>
+    </section>
+
+    <section class="card" id="create">
+      <h2>Create a post</h2>
+      <p class="muted">What's on your mind today?</p>
+      <label for="postText">Your message</label>
+      <textarea id="postText" maxlength="1000"
+        placeholder="Write something you'd like to share..."></textarea>
+      <button id="publishButton" type="button">Publish Post</button>
+      <p class="notice">
+        Demo version: posts are saved only in this browser on this device.
+        They are not yet shared with other users.
+      </p>
+    </section>
+
+    <section id="feed">
+      <h2>Community Feed</h2>
+      <div id="posts"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>💜 PurpleConnect</p>
+    <p class="notice">
+      A social platform in development. Please don't post private or sensitive
+      information in this demo.
+    </p>
+  </footer>
+
+  <script>
+    const postText = document.getElementById("postText");
+    const postsContainer = document.getElementById("posts");
+    const publishButton = document.getElementById("publishButton");
+
+    let posts = [];
+
+    try {
+      posts = JSON.parse(localStorage.getItem("purpleConnectPosts") || "[]");
+      if (!Array.isArray(posts)) posts = [];
+    } catch {
+      posts = [];
+    }
+
+    function renderPosts() {
+      postsContainer.replaceChildren();
+
+      if (posts.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "card muted";
+        empty.textContent = "No posts yet. Be the first to share something!";
+        postsContainer.appendChild(empty);
+        return;
+      }
+
+      posts.slice().reverse().forEach((post) => {
+        const card = document.createElement("article");
+        card.className = "card";
+
+        const meta = document.createElement("div");
+        meta.className = "post-meta";
+        meta.textContent = "PurpleConnect member · " + post.date;
+
+        const content = document.createElement("p");
+        content.className = "post";
+        content.textContent = post.text;
+
+        card.append(meta, content);
+        postsContainer.appendChild(card);
+      });
+    }
+
+    publishButton.addEventListener("click", () => {
+      const text = postText.value.trim();
+
+      if (!text) {
+        alert("Please write something before publishing.");
+        return;
+      }
+
+      posts.push({
+        text: text,
+        date: new Date().toLocaleString()
+      });
+
+      try {
+        localStorage.setItem("purpleConnectPosts", JSON.stringify(posts));
+      } catch {
+        alert("Your browser couldn't save this post. Please try again.");
+        posts.pop();
+        return;
+      }
+
+      postText.value = "";
+      renderPosts();
+      document.getElementById("feed").scrollIntoView({ behavior: "smooth" });
+    });
+
+    renderPosts();
+  </script>
+</body>
+</html>
